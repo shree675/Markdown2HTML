@@ -1,11 +1,11 @@
 const fsprm = require("fs").promises;
+const fetch = require("node-fetch");
 import PasteClient from "pastebin-api";
 import chalk from "chalk";
 import { exit } from "process";
-const fetch = require("node-fetch");
+import { header } from "../exports";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-process.env.NODE_NO_WARNINGS = "1";
 const client = new PasteClient(process.env.PASTEBIN_DEV_KEY ?? "");
 
 const readline = require("readline").createInterface({
@@ -13,12 +13,8 @@ const readline = require("readline").createInterface({
   output: process.stdout,
 });
 
-var title = "";
-const header = (t: string) => {
-  return `<!doctype html>\n<html>\n<head>\n\t<meta charset="utf-8">\n\t<title>${t}</title>\n\t<meta name="description" content="${t}">\n\t<link rel="stylesheet" href="styles.css">\n</head>\n<body>\n`;
-};
 const footer = `</body>\n</html>\n`;
-
+var title = "";
 var input = "";
 var path = "";
 var dir = "";
@@ -96,22 +92,22 @@ const createStyles = async () => {
 
 const create = async () => {
   let mdraw = "";
-  // await query("Enter name of the new folder: ");
-  // dir = input;
-  // await fsprm.mkdir(dir).catch((err: any) => {
-  //   console.log(chalk.red("ERR: ") + err.message);
-  //   readline.close();
-  //   exit();
-  // });
-  // await query("Enter the title of the page: ");
-  // title = input;
-  // await query("Enter path of the md file " + chalk.grey("[relative path]: "));
-  // path = input;
+  await query("Enter name of the new folder: ");
+  dir = input;
+  await fsprm.mkdir(dir).catch((err: any) => {
+    console.log(chalk.red("ERR: ") + err.message);
+    readline.close();
+    exit();
+  });
+  await query("Enter the title of the page: ");
+  title = input;
+  await query("Enter path of the md file " + chalk.grey("[relative path]: "));
+  path = input;
   readline.close();
 
-  dir = "st";
-  path = "./t.md";
-  title = "test page";
+  // dir = "st";
+  // path = "./t.md";
+  // title = "test page";
 
   const format = path[0] === "/" || path[0] === "." ? "" : "/";
   mdraw = await fsprm.readFile(process.cwd() + "/" + format + path, (err: any, data: any) => {

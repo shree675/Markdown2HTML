@@ -17,8 +17,11 @@
     "chalk": "^4.1.0",
     "commander": "^8.3.0",
     "conf": "^10.1.1",
+    "dotenv": "^10.0.0",
     "figlet": "^1.5.2",
+    "node-fetch": "^2.6.6",
     "nodemon": "^2.0.15",
+    "pastebin-api": "^1.0.6",
     "typescript": "^4.5.4"
   },
   "bin": {

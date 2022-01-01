@@ -1,7 +1,12 @@
-const fs = require("fs");
 const fsprm = require("fs").promises;
+import PasteClient from "pastebin-api";
 import chalk from "chalk";
 import { exit } from "process";
+const fetch = require("node-fetch");
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+process.env.NODE_NO_WARNINGS = "1";
+const client = new PasteClient(process.env.PASTEBIN_DEV_KEY ?? "");
 
 const readline = require("readline").createInterface({
   input: process.stdin,
@@ -26,9 +31,11 @@ const hrreg = /\-/g;
 const codereg = /`[^`]+`/g;
 const altcodereg = /```[^`]+```/g;
 const multicodereg = /(^|\n)```\n[^`]*\n```($|\n)/g;
-const olreg = /^[1-9][0-9]*\. /; // first occurrence
-const ulreg = /^\*\. /; // first occurrence
-const linkreg = /\[[^\[^\]^ ]*\]\([^ ^\[^\]]*\)/g;
+const olreg = /^[1-9][0-9]*\. .*/; // first occurrence
+const ulreg = /^\* .*/; // first occurrence
+const linkreg = /\[[^\[^\]^]*\]\([^ ^\[^\]]*\)/g;
+const imagereg = /\!\[[^\[^\]^]*\]\([^\[^\]]*\)/g;
+const strikethroughreg = /~~[^~]*~~/g;
 
 function query(query: string) {
   return new Promise((resolve) =>
@@ -39,9 +46,56 @@ function query(query: string) {
   );
 }
 
-const init = async () => {
+function encode(data: { [key: string]: unknown }): BodyInit {
+  let string = "";
+  for (const [key, value] of Object.entries(data)) {
+    if (!value) continue;
+    string += `&${encodeURIComponent(key)}=${encodeURIComponent(`${value}`)}`;
+  }
+  return string.substring(1);
+}
+
+async function getRawPasteByKey(options: any): Promise<string> {
+  const res = await fetch("https://pastebin.com/api/api_raw.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: encode({
+      api_option: "show_paste",
+      api_dev_key: options.apiKey,
+      api_user_key: options.userKey,
+      api_paste_key: options.pasteKey,
+    }),
+  });
+  const data = await res.text();
+  if (data.toLowerCase().startsWith("bad api request")) {
+    return Promise.reject(data);
+  }
+  return data;
+}
+
+const createStyles = async () => {
+  const token = await client.login(process.env.PASTEBIN_USERNAME ?? "", process.env.PASTEBIN_PASSWORD ?? "");
+  var pastes = await client.getPastesByUser({
+    userKey: token,
+    limit: 100,
+  });
+  pastes = pastes?.sort(function (a, b) {
+    var keyA = a.paste_date,
+      keyB = b.paste_date;
+    if (keyA < keyB) return -1;
+    if (keyA > keyB) return 1;
+    return 0;
+  });
+  const styles = await getRawPasteByKey({
+    pasteKey: (pastes || [])[0].paste_key,
+    userKey: token,
+    apiKey: process.env.PASTEBIN_DEV_KEY,
+  });
+  return styles;
+};
+
+const create = async () => {
   let mdraw = "";
-  let lines = [];
   // await query("Enter name of the new folder: ");
   // dir = input;
   // await fsprm.mkdir(dir).catch((err: any) => {
@@ -51,7 +105,7 @@ const init = async () => {
   // });
   // await query("Enter the title of the page: ");
   // title = input;
-  // await query("Path of the md file " + chalk.grey("[relative path]: "));
+  // await query("Enter path of the md file " + chalk.grey("[relative path]: "));
   // path = input;
   readline.close();
 
@@ -73,10 +127,11 @@ const init = async () => {
     console.log(chalk.red("ERR: ") + err.message);
     exit();
   });
-  // await fsprm.writeFile(`${dir}/styles.css`, header(title) + footer).catch((err: any) => {
-  //   console.log(chalk.red("ERR: ") + err.message);
-  //   exit();
-  // });
+  await fsprm.writeFile(`${dir}/styles.css`, await createStyles()).catch((err: any) => {
+    console.log(chalk.red("ERR: ") + err.message);
+    exit();
+  });
+  exit();
 };
 
 const parseMd = (mdraw: string) => {
@@ -144,6 +199,31 @@ const parseMd = (mdraw: string) => {
           line = line.replace(word, `<span id="code">${word.slice(1, word.length - 1)}</span>`);
         })
       : null;
+    // ~~strike through~~
+    words = line.match(strikethroughreg);
+    words
+      ? words.forEach((word: string, index: number) => {
+          flag = true;
+          line = line.replace(word, `<strike>${word.slice(2, word.length - 2)}</strike>`);
+        })
+      : null;
+    // ordered list
+    words = line.match(olreg);
+    words
+      ? words.forEach((word: string, index: number) => {
+          flag = true;
+          line = line.replace(word, `<div id="list">${word.slice(0, word.length)}</div>`);
+        })
+      : null;
+    // unordered list
+    words = line.match(ulreg);
+    words
+      ? words.forEach((word: string, index: number) => {
+          flag = true;
+          line = line.replace(word, `<div id="list">${word.slice(0, word.length)}</div>`);
+          line = line.replace(/\*/, "●");
+        })
+      : null;
     // block
     if (line.substring(0, 2) === "> ") {
       flag = true;
@@ -171,7 +251,7 @@ const parseMd = (mdraw: string) => {
           var array = word.split("](");
           innerhtml = array[0].slice(1);
           href = array[1].slice(0, array[1].length - 1);
-          line = line.replace(word, `<a href="${href}">${innerhtml}</a>`);
+          line = line.replace(word, `<a href="${href}" target="_blank">${innerhtml}</a>`);
         })
       : null;
     body += line + "\n";
@@ -179,4 +259,4 @@ const parseMd = (mdraw: string) => {
   return body;
 };
 
-export { init };
+export { create };

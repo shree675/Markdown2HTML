@@ -25,7 +25,7 @@ const nothrreg = /[^- ]+/g;
 const hrreg = /\-/g;
 const codereg = /`[^`]+`/g;
 const altcodereg = /```[^`]+```/g;
-const multicodereg = /```\n[^`]*\n```($|\n)/g;
+const multicodereg = /(^|\n)```\n[^`]*\n```($|\n)/g;
 const olreg = /^[1-9][0-9]*\. /; // first occurrence
 const ulreg = /^\*\. /; // first occurrence
 const linkreg = /\[[^\[^\]^ ]*\]\([^ ^\[^\]]*\)/g;
@@ -88,14 +88,19 @@ const parseMd = (mdraw: string) => {
   words = mdraw.match(multicodereg);
   words
     ? words.forEach((word: string, index: number) => {
-        mdraw = mdraw.replace(word, `\n<div id="multi-code">${word.slice(4, word.length - 4)}</div>\n`);
+        mdraw = mdraw.replace(
+          word,
+          `\n<div id="multi-code">${word.slice(word[0] === "\n" ? 5 : 4, word.length - 4)}</div>\n`
+        );
       })
     : null;
   mdraw = mdraw.replace(/\t/g, "&emsp; ");
   lines = mdraw.split("\n");
   var body = "";
   var offset;
+  var flag;
   lines.forEach((line: string, index: number) => {
+    flag = false;
     offset = 0;
     if (line === "" && lines[index + 1] === "") {
       line = "<br></br>";
@@ -128,17 +133,20 @@ const parseMd = (mdraw: string) => {
     words = line.match(altcodereg);
     words
       ? words.forEach((word: string, index: number) => {
+          flag = true;
           line = line.replace(word, `<span id="code">${word.slice(3, word.length - 3)}</span>`);
         })
       : null;
     words = line.match(codereg);
     words
       ? words.forEach((word: string, index: number) => {
+          flag = true;
           line = line.replace(word, `<span id="code">${word.slice(1, word.length - 1)}</span>`);
         })
       : null;
     // block
     if (line.substring(0, 2) === "> ") {
+      flag = true;
       line = `<div id="block">${line.slice(2)}</div>`;
       offset = 16;
     }
@@ -152,7 +160,7 @@ const parseMd = (mdraw: string) => {
     } else if (!line.match(nothrreg) && (line.match(hrreg) || []).length >= 3) {
       line = '<hr id="line">';
     } else {
-      line = `<p>${line}</p>`;
+      line = !flag ? `<p>${line}</p>` : line;
     }
     // links
     words = line.match(linkreg);

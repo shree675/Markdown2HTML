@@ -3,7 +3,7 @@ const fetch = require("node-fetch");
 import PasteClient from "pastebin-api";
 import chalk from "chalk";
 import { exit } from "process";
-import { header } from "../exports";
+import { header, footer } from "../exports";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 const client = new PasteClient(process.env.PASTEBIN_DEV_KEY ?? "");
@@ -13,7 +13,6 @@ const readline = require("readline").createInterface({
   output: process.stdout,
 });
 
-const footer = `</body>\n</html>\n`;
 var title = "";
 var input = "";
 var path = "";

@@ -1,9 +1,10 @@
 const fsprm = require("fs").promises;
 const fetch = require("node-fetch");
+const path = require("path");
 import PasteClient from "pastebin-api";
 import chalk from "chalk";
 import { exit } from "process";
-import { header, footer } from "../exports";
+import { header, headerPage, footerNext, footer } from "../exports";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 const client = new PasteClient(process.env.PASTEBIN_DEV_KEY ?? "");
@@ -13,12 +14,11 @@ const readline = require("readline").createInterface({
   output: process.stdout,
 });
 
-var title = "";
 var input = "";
-var path = "";
-var dir = "";
+var pathname = "";
+var format = "";
 
-const bolditalicreg = /\*\*\*[^\*]+\*\*\*/g;
+const bolditalicreg = /(\*\*\*[^\*]+\*\*\*)|(\*\*\_[^\*]+\_\*\*)/g;
 const italicreg = /\*[^\*]+\*/g;
 const boldreg = /\*\*[^\*]+\*\*/g;
 const nothrreg = /[^- ]+/g;
@@ -28,8 +28,8 @@ const altcodereg = /```[^`]+```/g;
 const multicodereg = /(^|\n)```\n[^`]*\n```($|\n)/g;
 const olreg = /^[1-9][0-9]*\. .*/; // first occurrence
 const ulreg = /^\* .*/; // first occurrence
-const linkreg = /\[[^\[^\]^]*\]\([^ ^\[^\]]*\)/g;
-const imagereg = /\!\[[^\[^\]^]*\]\([^\[^\]]*\)/g;
+const linkreg = /\[[^\[^\]]*\]\([^ ^\[^\]]*\)/g;
+const imagereg = /\!\[[^\[^\]]*\]\([^\[^\]]*\)/g;
 const strikethroughreg = /~~[^~]*~~/g;
 
 function query(query: string) {
@@ -90,26 +90,37 @@ const createStyles = async () => {
 };
 
 const create = async () => {
-  let mdraw = "";
-  await query("Enter name of the new folder: ");
-  dir = input;
-  await fsprm.mkdir(dir).catch((err: any) => {
-    console.log(chalk.red("ERR: ") + err.message);
-    readline.close();
-    exit();
-  });
-  await query("Enter the title of the page: ");
-  title = input;
-  await query("Enter path of the md file " + chalk.grey("[relative path]: "));
-  path = input;
+  var dir = "";
+  // await query("Enter name of the new folder: ");
+  // dir = input;
+  // await fsprm.mkdir(dir).catch((err: any) => {
+  //   console.log(chalk.red("ERR: ") + err.message);
+  //   readline.close();
+  //   exit();
+  // });
+
+  dir = "st";
+
+  await initiateCreate(0, dir);
   readline.close();
+  exit();
+};
 
-  // dir = "st";
-  // path = "./t.md";
-  // title = "test page";
+const initiateCreate = async (i: number, dir: string) => {
+  let mdraw = "";
+  let title = "";
+  let anotherPageResponse = "n";
 
-  const format = path[0] === "/" || path[0] === "." ? "" : "/";
-  mdraw = await fsprm.readFile(process.cwd() + "/" + format + path, (err: any, data: any) => {
+  // await query("Enter the title of the page: ");
+  // title = input;
+  // await query("Enter path of the md file " + chalk.grey("[relative path]: "));
+  // pathname = input;
+
+  pathname = "./t1.md";
+  title = "test page";
+
+  format = pathname[0] === "/" || pathname[0] === "." ? "" : "/";
+  mdraw = await fsprm.readFile(process.cwd() + "/" + format + pathname, (err: any, data: any) => {
     if (err) {
       console.log(chalk.red("ERR: ") + err.message);
       exit();
@@ -117,19 +128,56 @@ const create = async () => {
     return data;
   });
   mdraw = mdraw.toString();
-  var finalbody = parseMd(mdraw);
-  await fsprm.writeFile(`${dir}/index.html`, header(title) + finalbody + footer).catch((err: any) => {
-    console.log(chalk.red("ERR: ") + err.message);
+  var finalbody = await parseMd(mdraw, dir);
+  console.log(chalk.green("Successfully generated!"));
+
+  await query("Do you want to add another page? " + chalk.grey("[y/N] "));
+  anotherPageResponse = input;
+  if (anotherPageResponse.toLowerCase().trim()[0] === "y") {
+    if (i === 0) {
+      await fsprm
+        .writeFile(`${dir}/index.html`, header(title) + finalbody + footerNext("pages/page1.html"))
+        .catch((err: any) => {
+          console.log(chalk.red("ERR: ") + err.message);
+          exit();
+        });
+      await fsprm.writeFile(`${dir}/styles.css`, await createStyles()).catch((err: any) => {
+        console.log(chalk.red("ERR: ") + err.message);
+        exit();
+      });
+    } else {
+      await fsprm.mkdir(`${dir}/pages`).catch((err: any) => {});
+      await fsprm
+        .writeFile(`${dir}/pages/page${i}.html`, headerPage(title) + finalbody + footerNext(`page${i + 1}.html`))
+        .catch((err: any) => {
+          console.log(chalk.red("ERR: ") + err.message);
+          exit();
+        });
+    }
+    await initiateCreate(i + 1, dir);
+  } else {
+    if (i === 0) {
+      await fsprm.writeFile(`${dir}/index.html`, header(title) + finalbody + footer).catch((err: any) => {
+        console.log(chalk.red("ERR: ") + err.message);
+        exit();
+      });
+      // await fsprm.writeFile(`${dir}/styles.css`, await createStyles()).catch((err: any) => {
+      //   console.log(chalk.red("ERR: ") + err.message);
+      //   exit();
+      // });
+    } else {
+      await fsprm.mkdir(`${dir}/pages`).catch((err: any) => {});
+      await fsprm.writeFile(`${dir}/pages/page${i}.html`, headerPage(title) + finalbody + footer).catch((err: any) => {
+        console.log(chalk.red("ERR: ") + err.message);
+        exit();
+      });
+    }
+    readline.close();
     exit();
-  });
-  await fsprm.writeFile(`${dir}/styles.css`, await createStyles()).catch((err: any) => {
-    console.log(chalk.red("ERR: ") + err.message);
-    exit();
-  });
-  exit();
+  }
 };
 
-const parseMd = (mdraw: string) => {
+const parseMd = async (mdraw: string, dir: string): Promise<string> => {
   var lines: string[];
   var words;
   mdraw += "\n";
@@ -149,13 +197,15 @@ const parseMd = (mdraw: string) => {
   var body = "";
   var offset;
   var flag;
-  lines.forEach((line: string, index: number) => {
+  var index = 0;
+  for (let line of lines) {
     flag = false;
     offset = 0;
     if (line === "" && lines[index + 1] === "") {
       line = "<br></br>";
       body += line + "\n";
-      return;
+      index++;
+      continue;
     }
     line = line.trim();
     // ***bold italic***
@@ -220,9 +270,9 @@ const parseMd = (mdraw: string) => {
         })
       : null;
     // block
-    if (line.substring(0, 2) === "> ") {
+    if (line.substring(0, 1) === ">") {
       flag = true;
-      line = `<div id="block">${line.slice(2)}</div>`;
+      line = `<div id="block">${line.slice(1)}</div>`;
       offset = 16;
     }
     // headers, etc.
@@ -237,6 +287,35 @@ const parseMd = (mdraw: string) => {
     } else {
       line = !flag ? `<p>${line}</p>` : line;
     }
+    // images
+    words = line.match(imagereg);
+    for (let word of words ?? "") {
+      var alttext = "";
+      var href = "";
+      var array = word.split("](");
+      alttext = array[0].slice(2);
+      href = path.resolve(process.cwd() + "/" + format + pathname);
+      href = path.join(href, "../");
+      href = path.join(href, array[1].slice(0, array[1].length - 1));
+      const imagefile = await fsprm.readFile(href, (err: any, data: any) => {
+        if (err) {
+          console.log(chalk.red("ERR: ") + err.message);
+          exit();
+        }
+        return data;
+      });
+      var temp = "";
+      for (let i = path.resolve(href, "../").length + 1; i < href.length; i++) {
+        temp += href[i];
+      }
+      href = `assets/${temp}`;
+      await fsprm.mkdir(`${dir}/assets`).catch((err: any) => {});
+      await fsprm.writeFile(`${dir}/${href}`, imagefile).catch((err: any) => {
+        console.log(chalk.red("ERR: ") + err.message);
+        exit();
+      });
+      line = line.replace(word, `<img src="${href}" alt="${alttext}"></img>`);
+    }
     // links
     words = line.match(linkreg);
     words
@@ -249,8 +328,12 @@ const parseMd = (mdraw: string) => {
           line = line.replace(word, `<a href="${href}" target="_blank">${innerhtml}</a>`);
         })
       : null;
+    // replace \< and \>
+    line = line.replace(/\\</g, "&lt;");
+    line = line.replace(/\\>/g, "&gt;");
     body += line + "\n";
-  });
+    index++;
+  }
   return body;
 };
 

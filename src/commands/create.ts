@@ -25,16 +25,12 @@ import {
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 const client = new PasteClient(process.env.PASTEBIN_DEV_KEY ?? "");
 
-const readline = require("readline").createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
 var input = "";
 var pathname = "";
 var format = "";
 var titles: string[] = [];
 var booktitle = "";
+var readline: any;
 
 function query(query: string) {
   return new Promise((resolve) =>
@@ -96,6 +92,12 @@ const createStyles = async () => {
 
 const create = async () => {
   var dir = "";
+
+  const read = require("readline").createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  readline = read;
 
   await query("Enter name of the new folder: ");
   dir = input;

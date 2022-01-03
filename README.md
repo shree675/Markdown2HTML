@@ -23,6 +23,7 @@ $ ssg create
 
 Output:
 
+<img src="assets/ssgdemo.gif" width="712"></img>
 
 ## Supported Markdown Syntax
 | Element | Syntax |
@@ -92,7 +93,9 @@ Here is an image:
 Here is another image:
 ![alt text](/images/image2.png)
 ```
-...is generated as...
+...is generated to...
+
+<img src="assets/ssgdemo2.gif" width="725"></img>
 
 ## Version
 v1.0

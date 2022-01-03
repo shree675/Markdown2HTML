@@ -15,6 +15,7 @@ $ ssg create
 * Automatically resolves image file paths mentioned in the markdown syntax for images ```[alt text](path/to/image)``` and copies the images from the path mentioned to an in-house folder.
 * Supports [nested syntax elements](https://github.com/shree675/Markdown2HTML/tree/main#more-insight).
 * Supports most of the HTML elements by default<sup><a href="https://github.com/shree675/Markdown2HTML/tree/main#notes">1</a></sup>.
+* CSS styles are obtained from a paste in [pastebin](https://pastebin.com/) using the pastebin API. So, the CSS styles can be modified without having to change the code.
 
 ## Demonstration
 

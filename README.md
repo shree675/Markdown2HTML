@@ -19,6 +19,11 @@ $ ssg create
 
 ## Demonstration
 
+<img src="https://user-images.githubusercontent.com/58718144/147938652-2a00cf14-ddf0-40a6-978c-23458d77fde5.gif" width="512"></img>
+
+Output:
+
+
 ## Supported Markdown Syntax
 | Element | Syntax |
 | ------- | ------ |

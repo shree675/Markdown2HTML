@@ -23,6 +23,7 @@ $ ssg create
 
 Output:
 
+<img src="assets/ssgdemo.gif" width="712"></img>
 
 ## Supported Markdown Syntax
 | Element | Syntax |
@@ -92,10 +93,12 @@ Here is an image:
 Here is another image:
 ![alt text](/images/image2.png)
 ```
-...is generated as...
+...is generated to...
+
+<img src="assets/ssgdemo2.gif" width="725"></img>
 
 ## Version
 v1.0
 
 ## Notes
-1. If \<img\> tag is used to render images instead of the syntax ```[alt text](path)```, then make sure to manually add the images into ```your_new_folder_name/assets``` folder. Accordingly, make changes in the **src** attribute of the \<img\> tag.
+If \<img\> tag is used to render images instead of the syntax ```![alt text](path)```, then make sure to manually add the images into ```your_new_folder_name/assets``` folder. Accordingly, make changes in the **src** attribute of the \<img\> tag.

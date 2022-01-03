@@ -101,4 +101,4 @@ Here is another image:
 v1.0
 
 ## Notes
-1. If \<img\> tag is used to render images instead of the syntax ```[alt text](path)```, then make sure to manually add the images into ```your_new_folder_name/assets``` folder. Accordingly, make changes in the **src** attribute of the \<img\> tag.
+If \<img\> tag is used to render images instead of the syntax ```![alt text](path)```, then make sure to manually add the images into ```your_new_folder_name/assets``` folder. Accordingly, make changes in the **src** attribute of the \<img\> tag.

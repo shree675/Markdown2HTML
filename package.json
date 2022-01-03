@@ -19,6 +19,7 @@
     "conf": "^10.1.1",
     "dotenv": "^10.0.0",
     "figlet": "^1.5.2",
+    "netlify": "^10.1.0",
     "node-fetch": "^2.6.6",
     "nodemon": "^2.0.15",
     "pastebin-api": "^1.0.6",

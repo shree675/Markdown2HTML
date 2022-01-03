@@ -7,7 +7,7 @@ const headerPage = (t: string) => {
 };
 
 const footerNext = (next: string) => {
-  return `<div id="footer">\n<a href="${next}" id="next-button">Next</a>\nPage created by <a href="https://github.com/shree675/Markdown2HTML" target="_blank">ssg</a>, 2022\n</div>\n</body>\n</html>\n<br></br>\n<br></br>\n`;
+  return `<div id="footer">\n<a href="${next}" id="next-button">Next</a>\n<div><a href="../index.html">Back to Index</a></div>\nPage created by <a href="https://github.com/shree675/Markdown2HTML" target="_blank">ssg</a>, 2022\n</div>\n</body>\n</html>\n<br></br>\n<br></br>\n`;
 };
 
 const indexHeader = (t: string) => {

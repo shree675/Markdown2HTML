@@ -1,16 +1,26 @@
 const fsprm = require("fs").promises;
 const fetch = require("node-fetch");
 const path = require("path");
+const figlet = require("figlet");
 import PasteClient from "pastebin-api";
 import chalk from "chalk";
-import { exit, title } from "process";
+import { exit } from "process";
+import { headerPage, indexHeader, footerNext, footer } from "../exports";
 import {
-  header,
-  headerPage,
-  indexHeader,
-  footerNext,
-  footer,
-} from "../exports";
+  bolditalicreg,
+  italicreg,
+  boldreg,
+  nothrreg,
+  hrreg,
+  codereg,
+  altcodereg,
+  multicodereg,
+  olreg,
+  ulreg,
+  linkreg,
+  imagereg,
+  strikethroughreg,
+} from "../regex";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 const client = new PasteClient(process.env.PASTEBIN_DEV_KEY ?? "");
@@ -26,20 +36,6 @@ var format = "";
 var titles: string[] = [];
 var booktitle = "";
 
-const bolditalicreg = /(\*\*\*[^\*]+\*\*\*)|(\*\*\_[^\*]+\_\*\*)/g;
-const italicreg = /\*[^\*]+\*/g;
-const boldreg = /\*\*[^\*]+\*\*/g;
-const nothrreg = /[^- ]+/g;
-const hrreg = /\-/g;
-const codereg = /`[^`]+`/g;
-const altcodereg = /```[^`]+```/g;
-const multicodereg = /(^|\n)```\n[^`]*\n```($|\n)/g;
-const olreg = /^[1-9][0-9]*\. .*/; // first occurrence
-const ulreg = /^\* .*/; // first occurrence
-const linkreg = /\[[^\[^\]]*\]\([^ ^\[^\]]*\)/g;
-const imagereg = /\!\[[^\[^\]]*\]\([^\[^\]]*\)/g;
-const strikethroughreg = /~~[^~]*~~/g;
-
 function query(query: string) {
   return new Promise((resolve) =>
     readline.question(query, (p: any) => {
@@ -51,6 +47,7 @@ function query(query: string) {
 
 function encode(data: { [key: string]: unknown }): BodyInit {
   let string = "";
+
   for (const [key, value] of Object.entries(data)) {
     if (!value) continue;
     string += `&${encodeURIComponent(key)}=${encodeURIComponent(`${value}`)}`;
@@ -77,10 +74,7 @@ async function getRawPasteByKey(options: any): Promise<string> {
 }
 
 const createStyles = async () => {
-  const token = await client.login(
-    process.env.PASTEBIN_USERNAME ?? "",
-    process.env.PASTEBIN_PASSWORD ?? ""
-  );
+  const token = await client.login(process.env.PASTEBIN_USERNAME ?? "", process.env.PASTEBIN_PASSWORD ?? "");
   var pastes = await client.getPastesByUser({
     userKey: token,
     limit: 100,
@@ -102,30 +96,36 @@ const createStyles = async () => {
 
 const create = async () => {
   var dir = "";
-  // await query("Enter name of the new folder: ");
-  // dir = input;
-  dir = "test0";
-  // await fsprm.mkdir(dir).catch((err: any) => {
-  // console.log(chalk.red("ERR: ") + err.message);
-  // readline.close();
-  // exit();
-  // });
-  // await fsprm.mkdir(`${dir}/pages`).catch((err: any) => {
-  //   console.log(chalk.red("ERR: ") + err.message);
-  //   readline.close();
-  //   exit();
-  // });
-  // await fsprm
-  //   .writeFile(`${dir}/styles.css`, await createStyles())
-  //   .catch((err: any) => {
-  //     console.log(chalk.red("ERR: ") + err.message);
-  //     exit();
-  //   });
-  // await query("Enter the title of the book: ");
-  // booktitle = input;
-  booktitle = "hello";
+
+  await query("Enter name of the new folder: ");
+  dir = input;
+  await fsprm.mkdir(dir).catch((err: any) => {
+    console.log(chalk.red("ERR: ") + err.message);
+    readline.close();
+    exit();
+  });
+  console.log(chalk.greenBright("New folder created successfully"));
+  await fsprm.mkdir(`${dir}/pages`).catch((err: any) => {
+    console.log(chalk.red("ERR: ") + err.message);
+    readline.close();
+    exit();
+  });
+  await fsprm.writeFile(`${dir}/styles.css`, await createStyles()).catch((err: any) => {
+    console.log(chalk.red("ERR: ") + err.message);
+    exit();
+  });
+  await query("Enter the title of the book: ");
+  booktitle = input;
   await initiateCreate(1, dir);
-  // await createIndex(dir);
+  await createIndex(dir);
+  console.log(
+    "Thanks for using",
+    chalk.cyan(
+      figlet.textSync(" ssg", {
+        font: "Slant",
+      })
+    )
+  );
   readline.close();
   exit();
 };
@@ -135,35 +135,27 @@ const initiateCreate = async (i: number, dir: string) => {
   let title = "";
   let anotherPageResponse = "n";
 
-  // await query("Enter the title of the page: ");
-  // title = input;
-  title = "hello";
+  await query("Enter the title of the page: ");
+  title = input;
   titles.push(title);
-  // await query("Enter path of the md file " + chalk.grey("[relative path]: "));
-  // pathname = input;
-  pathname = "/t.md";
+  await query("Enter path of the md file " + chalk.grey("[relative path]: "));
+  pathname = input;
   format = pathname[0] === "/" || pathname[0] === "." ? "" : "/";
-  mdraw = await fsprm.readFile(
-    process.cwd() + "/" + format + pathname,
-    (err: any, data: any) => {
-      if (err) {
-        console.log(chalk.red("ERR: ") + err.message);
-        exit();
-      }
-      return data;
+  mdraw = await fsprm.readFile(process.cwd() + "/" + format + pathname, (err: any, data: any) => {
+    if (err) {
+      console.log(chalk.red("ERR: ") + err.message);
+      exit();
     }
-  );
+    return data;
+  });
   mdraw = mdraw.toString();
   var finalbody = await parseMd(mdraw, dir);
   console.log(chalk.green("Successfully generated!"));
-  // await query("Do you want to add another page? " + chalk.grey("[y/N] "));
-  // anotherPageResponse = input;
+  await query("Do you want to add another page? " + chalk.grey("[y/N] "));
+  anotherPageResponse = input;
   if (anotherPageResponse.toLowerCase().trim()[0] === "y") {
     await fsprm
-      .writeFile(
-        `${dir}/pages/page${i}.html`,
-        headerPage(title) + finalbody + footerNext(`page${i + 1}.html`)
-      )
+      .writeFile(`${dir}/pages/page${i}.html`, headerPage(title) + finalbody + footerNext(`page${i + 1}.html`))
       .catch((err: any) => {
         console.log(chalk.red("ERR: ") + err.message);
         readline.close();
@@ -171,37 +163,37 @@ const initiateCreate = async (i: number, dir: string) => {
       });
     await initiateCreate(i + 1, dir);
   } else {
-    await fsprm
-      .writeFile(
-        `${dir}/pages/page${i}.html`,
-        headerPage(title) + finalbody + footer
-      )
-      .catch((err: any) => {
-        console.log(chalk.red("ERR: ") + err.message);
-        exit();
-      });
+    await fsprm.writeFile(`${dir}/pages/page${i}.html`, headerPage(title) + finalbody + footer).catch((err: any) => {
+      console.log(chalk.red("ERR: ") + err.message);
+      exit();
+    });
   }
 };
 
 const createIndex = async (dir: string) => {
   var body = "";
   var i = 1;
+
   titles.forEach((page: string) => {
     body += `<div><a href="pages/page${i}.html" id="index-a">${page}</a><span id="num">${i}</span></div>\n`;
     i++;
   });
-  await fsprm
-    .writeFile(`${dir}/index.html`, indexHeader(booktitle) + body + footer)
-    .catch((err: any) => {
-      console.log(chalk.red("ERR: ") + err.message);
-      readline.close();
-      exit();
-    });
+  await fsprm.writeFile(`${dir}/index.html`, indexHeader(booktitle) + body + footer).catch((err: any) => {
+    console.log(chalk.red("ERR: ") + err.message);
+    readline.close();
+    exit();
+  });
 };
 
 const parseMd = async (mdraw: string, dir: string): Promise<string> => {
   var lines: string[];
   var words;
+  var body = "";
+  var offset;
+  var flag;
+  var index = 0;
+  var temp = "";
+
   mdraw += "\n";
   // multi-line code
   mdraw = mdraw.replace(/\r\n/g, "\n");
@@ -210,19 +202,12 @@ const parseMd = async (mdraw: string, dir: string): Promise<string> => {
     ? words.forEach((word: string, index: number) => {
         mdraw = mdraw.replace(
           word,
-          `\n<div id="multi-code">${word.slice(
-            word[0] === "\n" ? 5 : 4,
-            word.length - 4
-          )}</div>\n`
+          `\n<div id="multi-code">${word.slice(word[0] === "\n" ? 5 : 4, word.length - 4)}</div>\n`
         );
       })
     : null;
   mdraw = mdraw.replace(/\t/g, "&emsp; ");
   lines = mdraw.split("\n");
-  var body = "";
-  var offset;
-  var flag;
-  var index = 0;
   for (let line of lines) {
     flag = false;
     offset = 0;
@@ -237,10 +222,7 @@ const parseMd = async (mdraw: string, dir: string): Promise<string> => {
     words = line.match(bolditalicreg);
     words
       ? words.forEach((word: string, index: number) => {
-          line = line.replace(
-            word,
-            `<b><i>${word.slice(3, word.length - 3)}</i></b>`
-          );
+          line = line.replace(word, `<b><i>${word.slice(3, word.length - 3)}</i></b>`);
         })
       : null;
     // **bold**
@@ -262,20 +244,14 @@ const parseMd = async (mdraw: string, dir: string): Promise<string> => {
     words
       ? words.forEach((word: string, index: number) => {
           flag = true;
-          line = line.replace(
-            word,
-            `<span id="code">${word.slice(3, word.length - 3)}</span>`
-          );
+          line = line.replace(word, `<span id="code">${word.slice(3, word.length - 3)}</span>`);
         })
       : null;
     words = line.match(codereg);
     words
       ? words.forEach((word: string, index: number) => {
           flag = true;
-          line = line.replace(
-            word,
-            `<span id="code">${word.slice(1, word.length - 1)}</span>`
-          );
+          line = line.replace(word, `<span id="code">${word.slice(1, word.length - 1)}</span>`);
         })
       : null;
     // ~~strike through~~
@@ -283,10 +259,7 @@ const parseMd = async (mdraw: string, dir: string): Promise<string> => {
     words
       ? words.forEach((word: string, index: number) => {
           flag = true;
-          line = line.replace(
-            word,
-            `<strike>${word.slice(2, word.length - 2)}</strike>`
-          );
+          line = line.replace(word, `<strike>${word.slice(2, word.length - 2)}</strike>`);
         })
       : null;
     // ordered list
@@ -294,10 +267,7 @@ const parseMd = async (mdraw: string, dir: string): Promise<string> => {
     words
       ? words.forEach((word: string, index: number) => {
           flag = true;
-          line = line.replace(
-            word,
-            `<div id="list">${word.slice(0, word.length)}</div>`
-          );
+          line = line.replace(word, `<div id="list">${word.slice(0, word.length)}</div>`);
         })
       : null;
     // unordered list
@@ -305,10 +275,7 @@ const parseMd = async (mdraw: string, dir: string): Promise<string> => {
     words
       ? words.forEach((word: string, index: number) => {
           flag = true;
-          line = line.replace(
-            word,
-            `<div id="list">${word.slice(0, word.length)}</div>`
-          );
+          line = line.replace(word, `<div id="list">${word.slice(0, word.length)}</div>`);
           line = line.replace(/\*/, "●");
         })
       : null;
@@ -347,7 +314,6 @@ const parseMd = async (mdraw: string, dir: string): Promise<string> => {
         }
         return data;
       });
-      var temp = "";
       for (let i = path.resolve(href, "../").length + 1; i < href.length; i++) {
         temp += href[i];
       }
@@ -357,10 +323,7 @@ const parseMd = async (mdraw: string, dir: string): Promise<string> => {
         console.log(chalk.red("ERR: ") + err.message);
         exit();
       });
-      line = line.replace(
-        word,
-        `<img src="../${href}" alt="${alttext}"></img>`
-      );
+      line = line.replace(word, `<img src="../${href}" alt="${alttext}"></img>`);
     }
     // links
     words = line.match(linkreg);
@@ -371,10 +334,7 @@ const parseMd = async (mdraw: string, dir: string): Promise<string> => {
           var array = word.split("](");
           innerhtml = array[0].slice(1);
           href = array[1].slice(0, array[1].length - 1);
-          line = line.replace(
-            word,
-            `<a href="${href}" target="_blank">${innerhtml}</a>`
-          );
+          line = line.replace(word, `<a href="${href}" target="_blank">${innerhtml}</a>`);
         })
       : null;
     // replace \< and \>

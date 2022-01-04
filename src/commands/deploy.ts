@@ -2,12 +2,16 @@ const fetch = require("node-fetch");
 const fs = require("fs");
 const zipper = require("zip-local");
 const chalk = require("chalk");
+const figlet = require("figlet");
 import { exit } from "process";
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 const baseurl = "https://api.netlify.com/api/v1/";
 
 var input = "";
 var readline: any;
+var siteid = "";
 
 function query(query: string) {
   return new Promise((resolve) =>
@@ -31,14 +35,16 @@ async function createZip(siteid: string): Promise<any> {
     return await createZip(siteid);
   }
   zipper.sync.zip(file).compress().save(`${siteid}.zip`);
-  stats = fs.statSync(file);
+  stats = fs.statSync(`${siteid}.zip`);
   fileSizeInBytes = stats.size;
-  fileStream = fs.createReadStream(file);
+  fileStream = fs.createReadStream(`${siteid}.zip`);
 
   return { fileSizeInBytes, fileStream };
 }
 
 const deploy = async () => {
+  // deleteFile("927f81c1-4e2c-49c9-9ca8-f5e7335020e8");
+
   const read = require("readline").createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -57,15 +63,11 @@ const deploy = async () => {
 
   await query("Do you want to deploy to an existing site? " + chalk.grey("[y/N] "));
   if (input.toLowerCase().trim()[0] === "y") {
-    var siteid;
-
     await query("Please enter the site id: ");
     siteid = input;
     stats = await createZip(siteid);
-    deployedUrl = await deployZip(siteid, stats.fileSizeInBytes, stats.fileStream);
+    deployedUrl = await deployZip(stats.fileSizeInBytes, stats.fileStream);
   } else {
-    var siteId = "";
-
     await fetch(`${baseurl}sites`, {
       method: "POST",
       headers: {
@@ -76,29 +78,38 @@ const deploy = async () => {
         return response.json();
       })
       .then((data: any) => {
-        siteId = data.site_id;
+        siteid = data.site_id;
       })
       .catch((err: any) => {
+        deleteFile();
         console.log(err);
+        exit();
       });
-    console.log("Your site id is: " + chalk.purple(siteId));
+    console.log("Your site id is: " + chalk.rgb(250, 150, 0)(siteid));
     console.log(
       chalk.yellow("Note: ") +
         "Please save this site id for further use. In case you want to update the contents of this book, use this site id to update the site."
     );
-    stats = await createZip(siteId);
-    deployedUrl = await deployZip(siteId, stats.fileSizeInBytes, stats.fileStream);
+    stats = await createZip(siteid);
+    deployedUrl = await deployZip(stats.fileSizeInBytes, stats.fileStream);
   }
 
   console.log(chalk.green("Deployed successfully!"));
-  console.log("Check out your book here:");
-  console.log(chalk.purple(deployedUrl));
-  deleteFile(siteid ?? "");
+  console.log("Check out your book here: " + chalk.rgb(128, 0, 128).underline(deployedUrl));
+  deleteFile();
+  console.log(
+    "Thanks for using",
+    chalk.cyan(
+      figlet.textSync(" ssg", {
+        font: "Slant",
+      })
+    )
+  );
   readline.close();
   exit();
 };
 
-const deployZip = async (siteid: string, fileSizeInBytes: any, fileStream: any): Promise<string> => {
+const deployZip = async (fileSizeInBytes: any, fileStream: any) => {
   var deployedUrl = "";
 
   await fetch(`${baseurl}sites/${siteid}/deploys`, {
@@ -116,22 +127,16 @@ const deployZip = async (siteid: string, fileSizeInBytes: any, fileStream: any):
     })
     .catch((err: any) => {
       console.log(chalk.red("ERR: ") + err.message);
-      deleteFile(siteid);
+      deleteFile();
       exit();
     });
   return deployedUrl;
 };
 
-const deleteFile = (siteid: string) => {
+const deleteFile = () => {
   if (fs.existsSync(`${siteid}.zip`)) {
     fs.unlinkSync(`${siteid}.zip`);
   }
 };
 
 export { deploy };
-
-// f5f7f301-a04b-4c8c-8198-05221c24eb8d
-// cranky-shockley-4c3025.netlify.app
-
-// 41495f37-670b-47fd-b3cb-a42a0abe21b5
-// jovial-wilson

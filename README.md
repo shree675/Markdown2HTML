@@ -103,7 +103,7 @@ Here is an image:
 Here is another image:
 ![alt text](/images/image2.png)
 ```
-...is generated to...
+...is converted into...
 
 <img src="assets/ssgdemo2.gif" width="725"></img>
 

@@ -11,5 +11,5 @@ import { deploy } from "./commands/deploy";
 process.removeAllListeners("warning");
 
 program.command("create").description("Creates a series of static web pages from input markdown files").action(create);
-program.command("deploy").description("Deploy a series of static web pages to production").action(deploy);
+program.command("deploy").description("Deploys a series of static web pages to production").action(deploy);
 program.parse();

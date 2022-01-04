@@ -38,12 +38,12 @@ async function createZip(siteid: string): Promise<any> {
   stats = fs.statSync(`${siteid}.zip`);
   fileSizeInBytes = stats.size;
   fileStream = fs.createReadStream(`${siteid}.zip`);
-
   return { fileSizeInBytes, fileStream };
 }
 
 const deploy = async () => {
-  // deleteFile("927f81c1-4e2c-49c9-9ca8-f5e7335020e8");
+  var deployedUrl = "";
+  var stats;
 
   const read = require("readline").createInterface({
     input: process.stdin,
@@ -51,8 +51,6 @@ const deploy = async () => {
   });
   readline = read;
 
-  var deployedUrl = "";
-  var stats;
   console.log(
     chalk.yellow("Note: ") +
       "If you have used " +
@@ -60,7 +58,6 @@ const deploy = async () => {
       " to create your book, please verify that all the links, images, etc. work correctly in all the created pages before deployment."
   );
   console.log();
-
   await query("Do you want to deploy to an existing site? " + chalk.grey("[y/N] "));
   if (input.toLowerCase().trim()[0] === "y") {
     await query("Please enter the site id: ");
@@ -82,7 +79,7 @@ const deploy = async () => {
       })
       .catch((err: any) => {
         deleteFile();
-        console.log(err);
+        console.log(chalk.red("ERR: ") + err.message);
         exit();
       });
     console.log("Your site id is: " + chalk.rgb(250, 150, 0)(siteid));
@@ -93,7 +90,6 @@ const deploy = async () => {
     stats = await createZip(siteid);
     deployedUrl = await deployZip(stats.fileSizeInBytes, stats.fileStream);
   }
-
   console.log(chalk.green("Deployed successfully!"));
   console.log("Check out your book here: " + chalk.rgb(128, 0, 128).underline(deployedUrl));
   deleteFile();

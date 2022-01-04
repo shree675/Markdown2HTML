@@ -3,10 +3,13 @@
 
 ## About
 A CLI tool that takes a series of markdown files as input and creates a fully-deployable book of static HTML web pages.
-Usage:
-```
-$ ssg create
-```
+
+## Commands
+1. ***ssg create***  
+Creates a set of linked web pages out of a series of input markdown files.
+
+2. ***ssg deploy***  
+Deploys the newly created/updated web pages and provides a shareable website link.
 
 ## Features
 * Creates a digital book of markdown pages that can be readily deployed.
@@ -16,14 +19,21 @@ $ ssg create
 * Supports [nested syntax elements](https://github.com/shree675/Markdown2HTML/tree/main#more-insight).
 * Supports most of the HTML elements by default<sup><a href="https://github.com/shree675/Markdown2HTML/tree/main#notes">1</a></sup>.
 * CSS styles are obtained from a paste in [pastebin](https://pastebin.com/) using the pastebin API. So, the CSS styles can be modified without having to change the code.
+* Uses [netlify](https://www.netlify.com/) as a hosting service for deploying the web pages using the netlify API.
 
 ## Demonstration
+
+Create a book of web pages:
 
 <img src="https://user-images.githubusercontent.com/58718144/147938652-2a00cf14-ddf0-40a6-978c-23458d77fde5.gif" width="512"></img>
 
 Output:
 
 <img src="assets/ssgdemo.gif" width="712"></img>
+
+Deploy the created book [optional]:
+
+<img src="https://user-images.githubusercontent.com/58718144/148021530-a902a870-a5c3-41e1-b386-3e7c83cfd24b.gif" width="512"></img>
 
 ## Supported Markdown Syntax
 | Element | Syntax |

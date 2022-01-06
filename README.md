@@ -20,6 +20,7 @@ Deploys the newly created/updated web pages and provides a shareable website lin
 * Supports most of the HTML elements by default<sup><a href="https://github.com/shree675/Markdown2HTML/tree/main#notes">1</a></sup>.
 * CSS styles are obtained from a paste in [pastebin](https://pastebin.com/) using the pastebin API. So, the CSS styles can be modified without having to change the code.
 * Uses [netlify](https://www.netlify.com/) as a hosting service for deploying the web pages using the netlify API.
+* The web pages can be easily and quickly deployed within just a few seconds using a single command. Refer to the demo below.
 
 ## Demonstration
 

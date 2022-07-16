@@ -48,7 +48,7 @@ Deploy the created book [optional]:
 | Fenced code | ` ```\n code \n``` ` |
 | Ordered list | `1. List item` |
 | Unordered list | `* List item` |
-| Horizantal rule | `---` `--- ---` `-- - -- - - -` etc. |
+| Horizontal rule | `---` `--- ---` `-- - -- - - -` etc. |
 | Link | `[link](path)` |
 | Image | `![alt text](path)` |
 | Strikethrough | `~~strike~~` |
@@ -111,5 +111,5 @@ Here is another image:
 ## Version
 v1.0
 
-## Notes
+## Note
 If \<img\> tag is used to render images instead of the syntax ```![alt text](path)```, then make sure to manually add the images into ```<your_new_folder_name>/assets``` folder. Accordingly, make changes in the **src** attribute of the \<img\> tag.

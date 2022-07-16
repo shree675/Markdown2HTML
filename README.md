@@ -17,7 +17,7 @@ Deploys the newly created/updated web pages and provides a shareable website lin
 * Supports all basic [markdown syntax elements](https://github.com/shree675/Markdown2HTML/tree/main#supported-markdown-syntax) along with a few additional syntax elements.
 * Automatically resolves image file paths mentioned in the markdown syntax for images ```![alt text](path/to/image)``` and copies the images from the path mentioned to an in-house folder.
 * Supports [nested syntax elements](https://github.com/shree675/Markdown2HTML/tree/main#more-insight).
-* Supports most of the HTML elements by default<sup><a href="https://github.com/shree675/Markdown2HTML/tree/main#notes">1</a></sup>.
+* Supports most of the HTML elements by default<sup><a href="https://github.com/shree675/Markdown2HTMLBooklet#note">1</a></sup>.
 * CSS styles are obtained from a paste in [pastebin](https://pastebin.com/) using the pastebin API. So, the CSS styles can be modified without having to change the code.
 * Uses [netlify](https://www.netlify.com/) as a hosting service for deploying the web pages using the netlify API.
 * The web pages can be easily and quickly deployed within just a few seconds using a single command. Refer to the demo below.
